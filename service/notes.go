@@ -67,7 +67,7 @@ func (n *Notes) List(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(notes)
+	json.NewEncoder(w).Encode(&models.NoteList{Notes: notes})
 }
 func (n *Notes) Delete(w http.ResponseWriter, r *http.Request) {
 	rbody, err := ioutil.ReadAll(r.Body)

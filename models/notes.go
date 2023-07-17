@@ -5,3 +5,7 @@ type Note struct {
 	Note string `json:"note,omitempty"`
 	SID  string `json:"s_id,omitempty"`
 }
+
+type NoteList struct {
+	Notes []*Note `json:"notes"`
+}
