@@ -40,6 +40,7 @@ func (n *Notes) Create(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&models.HttpErrorResponse{Message: daoError.Message})
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(&models.Note{Id: nodeID})
 }
@@ -64,6 +65,7 @@ func (n *Notes) List(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&models.HttpErrorResponse{Message: daoError.Message})
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(notes)
 }

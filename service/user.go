@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"accuknox/dao"
 	"accuknox/dao/datastore"
@@ -30,17 +31,28 @@ func (u *Users) Signup(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	if len(user.Name) < 3 {
+	if len(strings.Trim(user.Name, " ")) < 3 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(&models.HttpErrorResponse{Message: "invalid name"})
 		return
 	}
+	if len(strings.Trim(user.Email, " ")) < 3 {
+		http.Error(w, "invalid Email", http.StatusBadRequest)
+		return
+	}
+	if len(user.Password) < 6 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(&models.HttpErrorResponse{Message: "invalid password length, should be greater than 5"})
+		return
+	}
+
 	id, daoErr := u.user.Insert(user)
 	if daoErr != nil {
 		w.WriteHeader(daoErr.HttpStatus)
 		json.NewEncoder(w).Encode(&models.HttpErrorResponse{Message: daoErr.Message})
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(&models.UserCreatedResponse{Id: id})
 }
@@ -62,6 +74,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&models.HttpErrorResponse{Message: daoError.Message})
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(&models.UserLoginResponse{SID: sid})
 }

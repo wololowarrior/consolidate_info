@@ -31,7 +31,7 @@ func (u *UserDatastore) Login(user *models.UserLoginRequest) (string, *models.Da
 	for _, tempUser := range u.users {
 		if tempUser.Email == user.Email {
 			if tempUser.Password == user.Password {
-				tempUser.SID = "loggedin"
+				tempUser.SID = fmt.Sprintf("%sloggedIn", user.Email)
 				return tempUser.SID, nil
 			} else {
 				return "", &models.DaoError{
