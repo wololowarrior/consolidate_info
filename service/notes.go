@@ -28,6 +28,17 @@ func (n *Notes) Create(w http.ResponseWriter, r *http.Request) {
 
 	var noteCreate *models.Note
 	err = json.Unmarshal(rbody, &noteCreate)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if noteCreate.SID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	authorised := n.users.IsAuthorised(noteCreate.SID)
 	if authorised != nil {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -53,6 +64,16 @@ func (n *Notes) List(w http.ResponseWriter, r *http.Request) {
 
 	var noteCreate *models.Note
 	err = json.Unmarshal(rbody, &noteCreate)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if noteCreate.SID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	authorised := n.users.IsAuthorised(noteCreate.SID)
 	if authorised != nil {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -78,6 +99,17 @@ func (n *Notes) Delete(w http.ResponseWriter, r *http.Request) {
 
 	var noteCreate *models.Note
 	err = json.Unmarshal(rbody, &noteCreate)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if noteCreate.SID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	authorised := n.users.IsAuthorised(noteCreate.SID)
 	if authorised != nil {
 		w.WriteHeader(http.StatusUnauthorized)
