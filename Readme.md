@@ -1,3 +1,4 @@
+Golang based app for note taking
 ### Build the image:
 ```
 docker build -t accuknox:1.0 .
