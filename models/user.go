@@ -1,22 +1,23 @@
 package models
 
 type User struct {
-	Id       []byte
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Password string `json:"password"`
-	SID      string
-}
-
-type UserLoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password,omitempty"`
-}
-
-type UserLoginResponse struct {
-	SID string `json:"s_id"`
+	Id             int64   `json:"id"`
+	Email          string  `json:"email"`
+	Name           string  `json:"name"`
+	Phonenumber    int     `json:"phonenumber"`
+	Ipv4           string  `json:"ipv4,omitempty"`
+	LinkedIds      []int64 `json:"linkedId,omitempty"`
+	LinkPrecedence string  `json:"linkPrecedence,omitempty"`
 }
 
 type UserCreatedResponse struct {
-	Id []byte `json:"id"`
+	Id        int64   `json:"id"`
+	LinkedIds []int64 `json:"linkedId,omitempty"`
+}
+
+type IdentifyMatchResponse struct {
+	PrimaryContactID    int64    `json:"primaryContactID"`
+	SecondaryContactIDs []int64  `json:"secondaryContactIDs"`
+	Emails              []string `json:"emails"`
+	PhoneNumbers        []int    `json:"phoneNumbers"`
 }
