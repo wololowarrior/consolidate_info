@@ -1,91 +1,81 @@
-Golang based app for note taking
-### Build the image:
-```
-docker build -t accuknox:1.0 .
-```
+### User details consolidation
+An api endpoint `/identify` that consolidates user signups. The user is currently tracked using the ip address their request is from.
+This tracking can also be done using server set cookies but considering the effort I'm tracking using IP.
 
-### Run the container
-```
-docker run -p 10000:10000 accuknox:1.0
-```
+The postgres db `user` has the following table `contact`:
 
-### Pull image off docker hub
-```
-docker pull harshil18/accuknox:1.0
-```
+| column         | data type                    |
+|----------------|------------------------------|
+| id             | int                          |
+| Email          | string                       |
+| phonenumber    | int                          |
+| linkedID       | int[]                        |
+| linkprecedence | enum('primary', 'secondary') |
+| ipv4           | string                       |
 
-### Signup
-```
-[POST]
-localhost:10000/signup
-```
+LinkedID contains the list of ID of the secondary users if the linkprecedence is primary, 
+i.e. contact details of secondary signups.
 
-```json
-{
-"email": "h@g.com",
-"name": "harshil",
-"password": "pass123"
-}
-```
+#### DB setup
+[db_init.sh](bin/db_init.sh) contains the script to create db and setup the tables.
+This can be improved to goose migrations.
 
-### Login
-```
-[POST]
-localhost:10000/login
-```
+### How it works
 
-```json
-{
-  "email": "h@g.com",
-  "password": "pass123"
-}
-```
-Response
-```json
-{
-    "s_id": "h@g.comloggedIn"
-}
-```
+When an api call is made to `/identify` the request contains the ip address.
+If the email id is not in the db, and there is no `linkprecedance=primary` in the db from that ip
+we add that email as `primary` to the db. Subsequent calls from another email/phonenumber combination
+from the same ip will create a `linkprecedance=secondary` and update the `linkedID` array in the `primary`.
 
-### Create Note
-```
-[POST]
-localhost:10000/note
-```
 
-```json
-{
-  "s_id":"h@g.comloggedIn",
-  "note":"test note1"
-}
-```
+### Steps to run:
+1. Run `./setup.sh`, to bring up the postgres db and initialize the db.
+2. This script should also bring up the container that handles the api endpoints
 
-### Get Notes
-```
-[GET]
-localhost:10000/note
-```
-Response
-```json
-{
-  "notes": [
+### How to test:
+1. First make a call to the api
+    ```shell
+    curl --location 'localhost:10000/identify' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name":"harshil",
+        "email": "h@g.com",
+        "phonenumber": 123
+    }'
+    ```
+   Response
+   ```json
     {
-      "id": 1,
-      "note": "test note1"
+    "primaryContactID": 1,
+    "secondaryContactIDs": null,
+    "emails": null,
+    "phoneNumbers": null
     }
-  ]
-}
-```
-
-### Delete Note
-```
-[DELETE]
-localhost:10000/note
-```
-```json
-{
-    "s_id":"h@g.comloggedIn",
-    "id":2
-}
-```
-
+    ```
+2. Another call to the api with different set of email/phonenumber
+    ```shell
+    curl --location 'localhost:10000/identify' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name":"harshil",
+        "email": "h@g1.com",
+        "phonenumber": 12321
+    }'
+    ```
+   ```json
+   {
+    "primaryContactID": 1,
+    "secondaryContactIDs": [
+        2
+    ],
+    "emails": [
+        "h@g1.com"
+    ],
+    "phoneNumbers": [
+        12321
+    ]
+   }
+   ```
+   
+Theoritically we should be able to create more docker networks with varying ip. That will give the 
+illusion of shopping from different IPs.
